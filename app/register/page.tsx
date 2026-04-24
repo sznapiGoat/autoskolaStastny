@@ -1,20 +1,13 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { LoginForm } from "@/components/auth/login-form";
+import { RegisterForm } from "@/components/auth/register-form";
 import { Car } from "lucide-react";
+import Link from "next/link";
 
-export default async function HomePage() {
+export default async function RegisterPage() {
   const session = await getServerSession(authOptions);
-
-  if (session?.user) {
-    const role = (session.user as any).role;
-    if (role === "INSTRUCTOR") {
-      redirect("/instructor");
-    } else {
-      redirect("/dashboard");
-    }
-  }
+  if (session?.user) redirect("/dashboard");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 flex flex-col items-center justify-center p-4">
@@ -24,16 +17,16 @@ export default async function HomePage() {
             <Car className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white">Autoškola Šťastný</h1>
-          <p className="text-blue-200 mt-2">Humpolec</p>
+          <p className="text-blue-200 mt-2">Registrace studenta</p>
         </div>
 
-        <LoginForm />
+        <RegisterForm />
 
         <p className="text-center text-blue-200 text-sm mt-6">
-          Nemáte účet?{" "}
-          <a href="/register" className="text-white font-medium hover:underline">
-            Registrujte se zde
-          </a>
+          Již máte účet?{" "}
+          <Link href="/" className="text-white font-medium hover:underline">
+            Přihlaste se
+          </Link>
         </p>
       </div>
     </div>

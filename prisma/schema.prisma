@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  phone         String?
+  dateOfBirth   DateTime?
+  role          Role      @default(STUDENT)
+  password      String?
+  image         String?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts     Account[]
+  sessions     Session[]
+  bookings     Booking[]  @relation("StudentBookings")
+  instructing  Booking[]  @relation("InstructorBookings")
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Availability {
+  id           String   @id @default(cuid())
+  instructorId String
+  dayOfWeek    Int
+  startTime    String
+  endTime      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("availability")
+}
+
+model BlockedDate {
+  id           String   @id @default(cuid())
+  instructorId String
+  date         DateTime @db.Date
+  reason       String?
+  createdAt    DateTime @default(now())
+
+  @@map("blocked_dates")
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  studentId      String
+  instructorId   String
+  date           DateTime      @db.Date
+  startTime      String
+  endTime        String
+  status         BookingStatus @default(PENDING)
+  notes          String?
+  pickupLocation String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  student    User @relation("StudentBookings", fields: [studentId], references: [id], onDelete: Cascade)
+  instructor User @relation("InstructorBookings", fields: [instructorId], references: [id], onDelete: Cascade)
+
+  @@map("bookings")
+}
