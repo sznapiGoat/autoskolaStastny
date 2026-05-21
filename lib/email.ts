@@ -2,9 +2,12 @@ import { Resend } from "resend";
 import { format } from "date-fns";
 import { cs } from "date-fns/locale";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM_EMAIL || "autoskola@autoskola-stastny.cz";
 const INSTRUCTOR_EMAIL = process.env.INSTRUCTOR_EMAIL || "instruktor@autoskola-stastny.cz";
+
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY ?? "re_placeholder");
+}
 
 function formatDate(date: Date | string): string {
   return format(new Date(date), "d. MMMM yyyy", { locale: cs });
@@ -22,7 +25,7 @@ export async function sendBookingConfirmationToStudent(data: {
   endTime: string;
   pickupLocation?: string;
 }) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: data.studentEmail,
     subject: `Potvrzení rezervace lekce – ${formatDate(data.date)}`,
@@ -56,7 +59,7 @@ export async function sendBookingNotificationToInstructor(data: {
   endTime: string;
   pickupLocation?: string;
 }) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: INSTRUCTOR_EMAIL,
     subject: `Nová rezervace lekce – ${data.studentName} – ${formatDate(data.date)}`,
@@ -90,7 +93,7 @@ export async function sendCancellationEmail(data: {
   const cancelledByText =
     data.cancelledBy === "student" ? "studentem" : "instruktorem";
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: data.recipientEmail,
     subject: `Zrušení rezervace lekce – ${formatDate(data.date)}`,
@@ -119,7 +122,7 @@ export async function sendReminderEmail(data: {
   endTime: string;
   pickupLocation?: string;
 }) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: data.studentEmail,
     subject: `Připomínka: Lekce jízdy zítra – ${data.startTime}`,
